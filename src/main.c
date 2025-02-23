@@ -3,7 +3,7 @@
 
 
 unsigned
-serial_base_xor(char *device, char **norm_name)
+serial_base_xor(const char *device, const char **norm_name)
 {
     unsigned num;
 
@@ -27,7 +27,7 @@ serial_base_xor(char *device, char **norm_name)
 }
 
 unsigned
-get_digit(char c)
+get_digit(const char c)
 {
     if (c >= 'A' && c <= 'F')
         return c - 'A' + 10;
@@ -37,27 +37,31 @@ get_digit(char c)
 }
 
 unsigned
-get_byte(char *mac_str, int pos)
+get_byte(const char *mac_str, int pos)
 {
-    printf("Byte from %s\n", &mac_str[pos]);
     unsigned b = get_digit(mac_str[pos]) * 16 + get_digit(mac_str[pos + 1]);
-    printf(" = %x\n", b);
     return b;
 }
 
 int
 main(int argc, const char *argv[])
 {
-    char *cmd = argv[1];
+    const char *cmd;
 
+    if (argc < 2)
+    {
+        return 3;
+    }
+
+    cmd = argv[1];
     if (strcmp(cmd, "encode") == 0 && argc > 3)
     {
-        char *device = argv[2];
-        char *mac_str = argv[3];
+        const char *device = argv[2];
+        const char *mac_str = argv[3];
         unsigned b1, b2, b3, num;
-        char *norm_name;
+        const char *norm_name;
 
-        if (strlen(serial) < 17)
+        if (strlen(mac_str) < 17)
             return 2;
 
         b1 = get_byte(mac_str, 9);
@@ -66,15 +70,15 @@ main(int argc, const char *argv[])
 
         num = serial_base_xor(device, &norm_name);
 
-        printf("%s0%dV%dA%dB%d\n", norm_name, b1 ^ num, b2 ^ (num - 1), b3 ^ (num + 2), b1 ^ (b2 + 3) ^ b3 );
+        printf("%s0%03dV%03dA%03dB%03d\n", norm_name, b1 ^ num, b2 ^ (num - 1), b3 ^ (num + 2), b1 ^ (b2 + 3) ^ b3 );
         return 0;
     }
     else if (strcmp(cmd, "decode") == 0 && argc > 2)
     {
-        char *serial = argv[2];
+        const char *serial = argv[2];
         char device[5] = "";
         unsigned num;
-        char *norm_name;
+        const char *norm_name;
         int b1n, b2n, b3n, crc;
         unsigned b1, b2, b3;
 
