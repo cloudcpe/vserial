@@ -43,6 +43,26 @@ get_byte(const char *mac_str, int pos)
     return b;
 }
 
+
+int
+print_serial(const char *device, const char *mac_str)
+{
+    unsigned b1, b2, b3, num;
+    const char *norm_name;
+
+    if (strlen(mac_str) < 17)
+        return 2;
+
+    b1 = get_byte(mac_str, 9);
+    b2 = get_byte(mac_str, 12);
+    b3 = get_byte(mac_str, 15);
+
+    num = serial_base_xor(device, &norm_name);
+
+    printf("%s0%03dV%03dA%03dB%03d\n", norm_name, b1 ^ num, b2 ^ (num - 1), b3 ^ (num + 2), b1 ^ (b2 + 3) ^ b3 );
+    return 0;
+}
+
 int
 main(int argc, const char *argv[])
 {
@@ -58,20 +78,8 @@ main(int argc, const char *argv[])
     {
         const char *device = argv[2];
         const char *mac_str = argv[3];
-        unsigned b1, b2, b3, num;
-        const char *norm_name;
 
-        if (strlen(mac_str) < 17)
-            return 2;
-
-        b1 = get_byte(mac_str, 9);
-        b2 = get_byte(mac_str, 12);
-        b3 = get_byte(mac_str, 15);
-
-        num = serial_base_xor(device, &norm_name);
-
-        printf("%s0%03dV%03dA%03dB%03d\n", norm_name, b1 ^ num, b2 ^ (num - 1), b3 ^ (num + 2), b1 ^ (b2 + 3) ^ b3 );
-        return 0;
+        return print_serial(device, mac_str);
     }
     else if (strcmp(cmd, "decode") == 0 && argc > 2)
     {
@@ -98,6 +106,25 @@ main(int argc, const char *argv[])
         printf("Model: %s\n", device);
         printf("MAC: %02X:%02X:%02X\n", b1, b2, b3);
         printf("CRC: %x vs %x", b1 ^ (b2 + 3) ^ b3, crc);
+        return 0;
+    }
+    else if (strcmp(cmd, "enumerate") == 0 && argc > 2)
+    {
+        const char *device = argv[2];
+
+        for (int b1 = 0; b1 < 255; ++b1)
+        {
+            for (int b2 = 0; b2 < 255; ++b2)
+            {
+                for (int b3 = 0; b3 < 255; ++b3)
+                {
+                    char mac[20];
+                    sprintf(mac, "%02X:%02X:%02X:%02X:%02X:%02X",
+                        1, 2, 3, (unsigned)b1, (unsigned)b2, (unsigned)b3);
+                    print_serial(device, mac);
+                }
+            }
+        }
         return 0;
     }
 
