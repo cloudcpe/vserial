@@ -7,12 +7,12 @@ serial_base_xor(const char *device, const char **norm_name)
 {
     unsigned num;
 
-    if (strcmp(device, "V107") == 0)
+    if (strcmp(device, "V107") == 0 || strcmp(device, "v107") == 0)
     {
         *norm_name = "V107";
         num = 107;
     }
-    else if (strcmp(device, "V110") == 0)
+    else if (strcmp(device, "V110") == 0 || strcmp(device, "v110") == 0)
     {
         *norm_name = "V110";
         num = 110;
